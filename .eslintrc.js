@@ -15,5 +15,6 @@ module.exports = {
     'no-use-before-define': ['error', { functions: false, classes: false }],
     // 'no-shadow': ['error', { builtinGlobals: false, hoist: 'functions', allow: [] }],
     'no-shadow': [1, { builtinGlobals: false, hoist: 'functions', allow: [] }],
+    'no-underscore-dangle': 0,
   },
 };

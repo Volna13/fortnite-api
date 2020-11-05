@@ -1,15 +1,56 @@
 const bcrypt = require('bcrypt');
-
+const jwt = require('jsonwebtoken');
 const User = require('../models/users.model');
 
-const { regSchema } = require('../utils/userValidationSchema');
+const { regSchema, loginSchema } = require('../utils/userValidationSchema');
 const UnprocessableEntity = require('../errors/unprocessableEntity');
 const ApplicationError = require('../errors/applicationError');
-const { SALT } = require('../config/key.config');
+const NotFoundError = require('../errors/notFounterror');
 
-exports.login = function (req, res) {
-  res.send('respond with a resource login');
+const { SALT, JWTSECRET } = require('../config/key.config');
+
+exports.login = async (req, res) => {
+  await validateLoginUser(req);
+  await loginUser(req, res, req.body.email, req.body.password);
 };
+
+async function validateLoginUser(req) {
+  try {
+    await loginSchema.validateAsync(req.body);
+  } catch (e) {
+    const field = e.details[0].context.label;
+    throw new UnprocessableEntity(field, e);
+  }
+}
+
+async function loginUser(req, res, email, password) {
+  const user = await User.findOne({ email: req.body.email });
+  if (user) {
+    const pwdResult = bcrypt.compareSync(password, user.password);
+    if (pwdResult) {
+      await authUser(req, res, user);
+    } else {
+      throw new UnprocessableEntity('Password', 'Password do not match');
+    }
+  } else {
+    throw new NotFoundError();
+  }
+}
+
+async function authUser(req, res, user) {
+  const token = jwt.sign(
+    {
+      userId: user._id,
+      email: user.email,
+    },
+    JWTSECRET,
+    { expiresIn: 60 * 60 },
+  );
+
+  res.status(200).json({
+    token: `Bearer ${token}`,
+  });
+}
 
 exports.register = async (req, res) => {
   await validateCreateUser(req);

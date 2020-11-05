@@ -39,13 +39,16 @@ app.use('/users', usersRouter);
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (err instanceof UnprocessableEntityError) {
+    console.log('error: ', err);
     res.status(err.getStatus()).json({
       field: err.getField(),
       message: err.message,
     });
   } else if (err instanceof ApplicationError) {
+    console.log('error: ', err);
     res.status(err.getStatus()).send();
   } else {
+    console.log('error: ', err);
     res.status(500).send();
   }
 });
