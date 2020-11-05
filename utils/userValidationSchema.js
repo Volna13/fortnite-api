@@ -19,7 +19,8 @@ const putUserSchema = joi
     email: joi.string().email().lowercase().trim(),
     currentPassword: joi.string().max(30).empty(''),
     newPassword: joi.string().min(3).max(30),
-    phone: joi.string().min(10).max(13).trim(),
+    platform: joi.string().valid('kbm', 'gamepad', 'touch').trim().required(),
+    epicNickname: joi.string().trim().required(),
   })
   .with('currentPassword', ['newPassword']);
 

@@ -2,12 +2,13 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/users.model');
 
-const { regSchema, loginSchema } = require('../utils/userValidationSchema');
+const { regSchema, loginSchema, putUserSchema } = require('../utils/userValidationSchema');
 
 const UnprocessableEntity = require('../errors/unprocessableEntity');
 const ApplicationError = require('../errors/applicationError');
 const NotFoundError = require('../errors/notFounterror');
 const UnauthorizedError = require('../errors/unauthorizedError');
+const ForbiddenError = require('../errors/forbiddenError');
 
 const { SALT, JWTSECRET } = require('../config/key.config');
 
@@ -104,5 +105,71 @@ exports.getCurrentUser = async (req, res) => {
       platform: currentUser.platform,
       epicNickname: currentUser.epicNickname,
     });
+  }
+};
+
+exports.updateCurrentUser = async (req, res, next) => {
+  await validateUpdateUser(req);
+  const id = req.user._id;
+  const currentUser = await User.findById(id);
+  const newUserData = await createNewUserData(req, res, next, currentUser, SALT);
+
+  try {
+    const updateUser = await User.update(newUserData, { where: { id } });
+    if (updateUser) {
+      res.status(200).json({
+        id,
+        name: newUserData.name || currentUser.name,
+        email: newUserData.email || currentUser.email,
+        platform: newUserData.platform || currentUser.platform,
+        epicNickname: newUserData.epicNickname || currentUser.epicNickname,
+      });
+    }
+  } catch (e) {
+    throw new ApplicationError(500);
+  }
+};
+
+async function validateUpdateUser(req) {
+  try {
+    await putUserSchema.validateAsync(req.body);
+  } catch (e) {
+    const field = e.details[0].context.label;
+    throw new UnprocessableEntity(field, e);
+  }
+}
+
+async function createNewUserData(req, res, next, currentUser, salt) {
+  const newUserData = {};
+  Object.keys(req.body).forEach((el) => {
+    newUserData[el] = ['name', 'email', 'platform', 'epicNickname', 'currentPassword', 'newPassword'].includes(el)
+      ? req.body[el]
+      : null;
+  });
+  if (newUserData.currentPassword || newUserData.currentPassword) {
+    if (bcrypt.compareSync(req.body.currentPassword, currentUser.password)) {
+      newUserData.newPassword = bcrypt.hashSync(req.body.newPassword, salt);
+    } else {
+      throw new UnprocessableEntity('Current Password', 'Password do not match');
+    }
+  }
+  return newUserData;
+}
+
+// need fix
+exports.deleteUser = async (req, res) => {
+  const { id } = req.params;
+  const authUserId = req.user._id;
+
+  const user = await User.findById(id);
+  if (user) {
+    if (user._id === authUserId) {
+      await user.destroy();
+      res.status(200).send();
+    } else {
+      throw new ForbiddenError();
+    }
+  } else {
+    throw new NotFoundError();
   }
 };
