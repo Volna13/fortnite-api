@@ -5,13 +5,14 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
+const passport = require('passport');
+const passportConfig = require('./midllewear/passport');
 
 const ApplicationError = require('./errors/applicationError');
 const UnprocessableEntityError = require('./errors/unprocessableEntity');
 
 const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
-const authRouter = require('./routes/auth.routes');
+const userRouter = require('./routes/user.routes');
 
 const { MONGO_URI } = require('./config/key.config');
 
@@ -23,6 +24,9 @@ mongoose
   .then(() => console.log('MongoDB connected'))
   .catch((e) => console.log('error:', e));
 
+app.use(passport.initialize());
+passportConfig(passport);
+
 app.use(morgan('dev'));
 app.use(cors());
 app.use(express.json());
@@ -33,8 +37,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use('/', indexRouter);
-app.use('/auth', authRouter);
-app.use('/users', usersRouter);
+app.use('/user', userRouter);
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {

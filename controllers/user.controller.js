@@ -3,9 +3,11 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/users.model');
 
 const { regSchema, loginSchema } = require('../utils/userValidationSchema');
+
 const UnprocessableEntity = require('../errors/unprocessableEntity');
 const ApplicationError = require('../errors/applicationError');
 const NotFoundError = require('../errors/notFounterror');
+const UnauthorizedError = require('../errors/unauthorizedError');
 
 const { SALT, JWTSECRET } = require('../config/key.config');
 
@@ -88,3 +90,19 @@ async function validateCreateUser(req) {
     throw new UnprocessableEntity(field, e);
   }
 }
+
+exports.getCurrentUser = async (req, res) => {
+  const id = req.user._id;
+  const currentUser = await User.findById(id);
+  if (!currentUser) {
+    throw new UnauthorizedError();
+  } else {
+    res.status(200).json({
+      id: currentUser.id,
+      name: currentUser.name,
+      email: currentUser.email,
+      platform: currentUser.platform,
+      epicNickname: currentUser.epicNickname,
+    });
+  }
+};
