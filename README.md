@@ -24,6 +24,38 @@ npm start
 ```
  for development process.
 
+### APi routes list
+ ```
+  POST /user/register - Register user
+  POST /user/login - Authorize user
+  PUT /user/me - Update user
+  DELETE /user/me - Delete user
+  GET /login/me - Get logged in user
+  GET /stat/me - Get logged in user stats
+```
+To successfully test the app u'd probably need one user created with correct F-Nite nickname
+here's the example payloads for ya :)
+
+```
+`/user/register`
+---------------------------------------------------------
+    "email": "test.user@gmail.com",
+    "password": "test",
+    "platform": "kbm",
+    "epicNickname": "animal",
+    "fullName": "John Doe"
+---------------------------------------------------------
+`/user/login`
+---------------------------------------------------------
+    "email": "test.user@gmail.com",
+    "password": "test"
+---------------------------------------------------------
+Authorization token (with Bearer) will be returned. Set it up as Authorization
+header and try calling `/stat/me`.
+Stats should be returned than.
+Users that were not found or theirs account are private would be handled appropriately.
+```
+
 And you're good to go.
  
  ------------------------------------------------------
