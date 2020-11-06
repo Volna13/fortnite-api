@@ -5,20 +5,22 @@ https://www.docker.com/get-started
 ------------------------------------------------------
 
 ### Build docker container with Mongo DB
-`docker-compose up`
+```javascript
+docker-compose up
+```
 
 ### Install NPM dependencies
 ```javascript
-`npm install`
+npm install
 ```
 
 ### Start App 
 ```javascript
-`npm start`
+npm start
 ```
  or
  ```javascript
-  `npm run dev`
+  npm run dev
 ```
  for development process.
 
