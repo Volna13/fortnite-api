@@ -1,14 +1,14 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/users.model');
+const UserStat = require('../models/userStat.model');
 
-const { regSchema, loginSchema, putUserSchema } = require('../utils/userValidationSchema');
+const { regSchema, loginSchema, putUserSchema } = require('../validationSchemas/userValidationSchema');
 
 const UnprocessableEntity = require('../errors/unprocessableEntity');
 const ApplicationError = require('../errors/applicationError');
 const NotFoundError = require('../errors/notFounterror');
 const UnauthorizedError = require('../errors/unauthorizedError');
-const ForbiddenError = require('../errors/forbiddenError');
 
 const { SALT, JWTSECRET } = require('../config/key.config');
 
@@ -72,8 +72,14 @@ exports.register = async (req, res) => {
       epicNickname: req.body.epicNickname,
     });
 
+    const newUserStat = new UserStat({
+      userId: newUser._id,
+      stat: null,
+    });
+
     try {
       await newUser.save();
+      await newUserStat.save();
       res.status(200).json(newUser);
       console.log('User created');
     } catch (e) {
@@ -115,11 +121,11 @@ exports.updateCurrentUser = async (req, res, next) => {
   const newUserData = await createNewUserData(req, res, next, currentUser, SALT);
 
   try {
-    const updateUser = await User.update(newUserData, { where: { id } });
+    const updateUser = await User.findOneAndUpdate(id, newUserData);
     if (updateUser) {
       res.status(200).json({
         id,
-        name: newUserData.name || currentUser.name,
+        fullName: newUserData.fullName || currentUser.fullName,
         email: newUserData.email || currentUser.email,
         platform: newUserData.platform || currentUser.platform,
         epicNickname: newUserData.epicNickname || currentUser.epicNickname,
@@ -142,7 +148,7 @@ async function validateUpdateUser(req) {
 async function createNewUserData(req, res, next, currentUser, salt) {
   const newUserData = {};
   Object.keys(req.body).forEach((el) => {
-    newUserData[el] = ['name', 'email', 'platform', 'epicNickname', 'currentPassword', 'newPassword'].includes(el)
+    newUserData[el] = ['fullName', 'email', 'platform', 'epicNickname', 'currentPassword', 'newPassword'].includes(el)
       ? req.body[el]
       : null;
   });
@@ -156,20 +162,12 @@ async function createNewUserData(req, res, next, currentUser, salt) {
   return newUserData;
 }
 
-// need fix
-exports.deleteUser = async (req, res) => {
-  const { id } = req.params;
+exports.deleteCurrentUser = async (req, res) => {
   const authUserId = req.user._id;
-
-  const user = await User.findById(id);
-  if (user) {
-    if (user._id === authUserId) {
-      await user.destroy();
-      res.status(200).send();
-    } else {
-      throw new ForbiddenError();
-    }
-  } else {
-    throw new NotFoundError();
+  try {
+    await User.findOneAndDelete(authUserId);
+    res.status(200).send();
+  } catch (e) {
+    throw new ApplicationError();
   }
 };

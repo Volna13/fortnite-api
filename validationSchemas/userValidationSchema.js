@@ -15,7 +15,7 @@ const loginSchema = joi.object({
 
 const putUserSchema = joi
   .object({
-    name: joi.string().trim(),
+    fullName: joi.string().trim(),
     email: joi.string().email().lowercase().trim(),
     currentPassword: joi.string().max(30).empty(''),
     newPassword: joi.string().min(3).max(30),

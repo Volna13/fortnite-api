@@ -7,22 +7,30 @@ const morgan = require('morgan');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const passportConfig = require('./midllewear/passport');
+const ScheduledJobs = require('./Jobs/ScheduledJobs');
 
 const ApplicationError = require('./errors/applicationError');
 const UnprocessableEntityError = require('./errors/unprocessableEntity');
 
 const indexRouter = require('./routes/index');
 const userRouter = require('./routes/user.routes');
+const statRouter = require('./routes/stat.routes');
 
 const { MONGO_URI } = require('./config/key.config');
 
 const app = express();
 
-mongoose.set('debug', true);
-mongoose
-  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connected'))
-  .catch((e) => console.log('error:', e));
+(async () => {
+  try {
+    await mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+    console.log('MongoDB connected');
+
+    const Jobs = new ScheduledJobs();
+    Jobs.runJobs();
+  } catch (e) {
+    console.log(e);
+  }
+})();
 
 app.use(passport.initialize());
 passportConfig(passport);
@@ -38,6 +46,7 @@ app.use(bodyParser.json());
 
 app.use('/', indexRouter);
 app.use('/user', userRouter);
+app.use('/stat', statRouter);
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
@@ -61,4 +70,5 @@ app.use(function (req, res) {
     message: 'error 404',
   });
 });
+
 module.exports = app;

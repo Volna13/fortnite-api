@@ -11,4 +11,8 @@ router.post('/register', asyncHandler(authController.register));
 
 router.get('/me', passport.authenticate('jwt', { session: false }), asyncHandler(authController.getCurrentUser));
 
+router.put('/me', passport.authenticate('jwt', { session: false }), asyncHandler(authController.updateCurrentUser));
+
+router.delete('/me', passport.authenticate('jwt', { session: false }), asyncHandler(authController.deleteCurrentUser));
+
 module.exports = router;
