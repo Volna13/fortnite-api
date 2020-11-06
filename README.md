@@ -8,11 +8,21 @@ https://www.docker.com/get-started
 `docker-compose up`
 
 ### Install NPM dependencies
+```javascript
 `npm install`
+```
 
 ### Start App 
-`npm start` or `npm run dev` for development process
-And you're good to go
+```javascript
+`npm start`
+```
+ or
+ ```javascript
+  `npm run dev`
+```
+ for development process.
+
+And you're good to go.
  
  ------------------------------------------------------
  This app runs Node-Schedule npm package to call scheduled jobs.
@@ -24,8 +34,9 @@ And you're good to go
  https://www.npmjs.com/package/node-schedule
  -----------------------------------------------------
  Other dependecies:
- 
- `bcrypt`: "^5.0.0", `body-parser`: "^1.19.0",
+ ```
+     `bcrypt`: "^5.0.0",
+     `body-parser`: "^1.19.0",
      `cookie-parser`: "~1.4.4",
      `cors`: "^2.8.5",
      `debug`: "~2.6.9",
@@ -40,6 +51,7 @@ And you're good to go
      `passport-jwt`: "^4.0.0",
      `passport-local`: "^1.0.0",
      `request`: "^2.88.2"
+```
      
 ------------------------------------------------
 developed by Alex Dimov     
